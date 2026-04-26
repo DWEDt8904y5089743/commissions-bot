@@ -1,0 +1,24 @@
+{
+  "1777174097571": {
+    "userId": "795429031084032050",
+    "type": "logo",
+    "stars": 5,
+    "designer": "@dub",
+    "review": "222",
+    "hasSwear": false,
+    "reviewedBy": "Bot (Auto-approved)",
+    "timestamp": "2026-04-26T03:28:17.571Z"
+  },
+  "1777213299323": {
+    "userId": "795429031084032050",
+    "type": "logo",
+    "stars": 5,
+    "designer": "@meddy0",
+    "review": "eee",
+    "hasSwear": false,
+    "reviewedBy": "Bot (Auto-approved)",
+    "autoApprove": true,
+    "timestamp": "2026-04-26T14:21:39.323Z",
+    "messageId": null
+  }
+}
