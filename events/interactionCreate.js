@@ -55,6 +55,7 @@ function resolveDesignerMention(input) {
 }
 
 const ordersFile = path.join(process.cwd(), "orders.json");
+const messageStoreFile = path.join(process.cwd(), "message-store.json");
 
 function loadOrders() {
   if (!fs.existsSync(ordersFile)) return {};
@@ -63,6 +64,15 @@ function loadOrders() {
 
 function saveOrders(orders) {
   fs.writeFileSync(ordersFile, JSON.stringify(orders, null, 2));
+}
+
+function loadMessageStore() {
+  if (!fs.existsSync(messageStoreFile)) return {};
+  return JSON.parse(fs.readFileSync(messageStoreFile, "utf8"));
+}
+
+function saveMessageStore(store) {
+  fs.writeFileSync(messageStoreFile, JSON.stringify(store, null, 2));
 }
 
 const orderPrompts = {
@@ -197,7 +207,12 @@ export default {
 
       const ticketLogChannel = guild.channels.cache.get(config.ticketLogChannelId);
 
-      await ticketChannel.send({ embeds: [embed] });
+      // Send embed and store message ID
+      const sentEmbed = await ticketChannel.send({ embeds: [embed] });
+      const store = loadMessageStore();
+      if (!store[ticketChannel.id]) store[ticketChannel.id] = [];
+      store[ticketChannel.id].push(sentEmbed.id);
+      saveMessageStore(store);
       if (ticketLogChannel?.isTextBased()) {
         await ticketLogChannel.send({
           content: `New order ticket opened by ${user.tag} (${user.id}) in ${ticketChannel}`
@@ -215,7 +230,11 @@ export default {
         .setStyle(ButtonStyle.Danger);
 
       const row = new ActionRowBuilder().addComponents(closeButton, forceCloseButton);
-      await ticketChannel.send({ content: "Use the button below when your order is complete or if you need to close the ticket.", components: [row] });
+      const buttonMessage = await ticketChannel.send({ content: "Use the button below when your order is complete or if you need to close the ticket.", components: [row] });
+      
+      // Store button message ID
+      store[ticketChannel.id].push(buttonMessage.id);
+      saveMessageStore(store);
 
       await dmChannel.send({
         content: `Your ticket channel is ready: ${ticketChannel}. Please continue the conversation there.`
