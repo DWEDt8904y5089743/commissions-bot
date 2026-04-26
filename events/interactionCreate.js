@@ -138,8 +138,13 @@ export default {
       const orders = loadOrders();
 
       // Check if user has an open order for this type
-      const userOrders = Object.values(orders).filter(order => order.userId === user.id && order.type === selected);
-      const hasOpen = userOrders.some(order => order.status === "open");
+      const userOrders = Object.entries(orders).filter(([channelId, order]) => 
+        order.userId === user.id && order.type === selected && order.status === "open"
+      );
+      const hasOpen = userOrders.some(([channelId]) => {
+        // Check if the channel still exists
+        return guild.channels.cache.has(channelId);
+      });
       if (hasOpen) {
         await interaction.reply({ content: `You already have an open ${selected} order. Please complete or close it before starting a new one.`, flags: 64 });
         return;

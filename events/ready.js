@@ -19,6 +19,10 @@ function loadOrders() {
   return JSON.parse(fs.readFileSync(ordersFile, "utf8"));
 }
 
+function saveOrders(orders) {
+  fs.writeFileSync(ordersFile, JSON.stringify(orders, null, 2));
+}
+
 export default {
   name: "clientReady",
   once: true,
@@ -31,6 +35,15 @@ export default {
 
     const store = loadMessageStore();
     const orders = loadOrders();
+
+    // Clean up orphaned orders (channels that no longer exist)
+    for (const [channelId, order] of Object.entries(orders)) {
+      if (order.status === "open" && !guild.channels.cache.has(channelId)) {
+        console.log(`Marking orphaned order ${channelId} as closed`);
+        order.status = "closed";
+        saveOrders(orders);
+      }
+    }
 
     // Clean up ticket channels and resend messages for active orders
     const cleanupPromises = [];

@@ -56,16 +56,29 @@ for (const file of fs.readdirSync(eventsPath).filter((f) => f.endsWith(".js"))) 
   }
 }
 
-client.login(config.token);
-
-// Health check server for Uptime Robot monitoring
+// Health check server for Uptime Robot monitoring - start this first
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.get('/', (req, res) => {
+  res.status(200).send('Commissions Bot is running!');
+});
+
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', uptime: process.uptime() });
+  const isReady = client.readyAt !== null;
+  const uptime = process.uptime();
+
+  res.status(200).json({
+    status: 'OK',
+    uptime,
+    timestamp: new Date().toISOString(),
+    discordReady: isReady,
+    guilds: isReady ? client.guilds.cache.size : 0
+  });
 });
 
 app.listen(PORT, () => {
   console.log(`Health check server running on port ${PORT}`);
 });
+
+client.login(config.token);
